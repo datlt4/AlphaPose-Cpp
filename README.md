@@ -25,3 +25,15 @@ python convert_torchscript.py --cfg "model-zoo/fast_pose_res50/256x192_res50_lr1
 $(which python) -m pip install dvc dvc[gdrive]
 dvc pull
 ```
+
+## Build
+
+- Before build `torch-app`, please make sure you built `torch` from [source](https://github.com/pytorch/pytorch#from-source ) or Download [libtorch](https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip) for build `torch` application in C++.
+
+```bash
+mkdir build && cd build
+export LIB_TORCH="/usr/local/libtorch"
+cmake -DCMAKE_PREFIX_PATH=$LIB_TORCH ..
+cmake --build . --config Release
+./torch-app
+```

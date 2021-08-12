@@ -40,9 +40,5 @@ if __name__ == '__main__':
     # Save torchscript model
     traced_model.save(args.pth.replace(".pth", ".jit"))
 
-
-"model-zoo/fast_pose_res152/256x192_res152_lr1e-3_1x-duc.yaml"
-"model-zoo/fast_pose_res50/256x192_res50_lr1e-3_1x.yaml"
-
-"model-zoo/fast_pose_res152/fast_421_res152_256x192.pth"
-"model-zoo/fast_pose_res50/fast_res50_256x192.pth"
+# python convert_torchscript.py --cfg "model-zoo/fast_pose_res50/256x192_res50_lr1e-3_1x.yaml" --pth "model-zoo/fast_pose_res50/fast_res50_256x192.pth"
+# python convert_torchscript.py --cfg "model-zoo/fast_pose_res152/256x192_res152_lr1e-3_1x-duc.yaml" --pth "model-zoo/fast_pose_res152/fast_421_res152_256x192.pth"
