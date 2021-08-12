@@ -1,0 +1,5 @@
+outs:
+- md5: 92b49e954d1673a7bd64169903d9ac75
+  size: 332523816
+  path: fast_421_res152_256x192.onnx
+  isexec: true

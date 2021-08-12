@@ -1,0 +1,5 @@
+outs:
+- md5: fc91135cf8ea2f5a85360d2336e2dbf7
+  size: 162603012
+  path: fast_res50_256x192.pth
+  isexec: true
