@@ -160,7 +160,6 @@ void AlphaPose::predict(cv::Mat image, std::vector<bbox> objBoxes, std::vector<P
     if (objBoxes.size() > 0)
     {
         torch::Tensor hm = this->al.forward({iimageBatch}).toTensor().to(torch::kCPU);
-        std::cout << hm << std::endl;
         postprocess(hm, cropped_boxes, poseKeypoints);
     }
 }
@@ -168,7 +167,6 @@ void AlphaPose::predict(cv::Mat image, std::vector<bbox> objBoxes, std::vector<P
 void AlphaPose::draw(const cv::Mat &matInput, cv::Mat &matOutput, const std::vector<PoseKeypoints> &poseKeypoints)
 {
     matInput.copyTo(matOutput);
-    std::cout << "poseKeypoints.size\t" << poseKeypoints.size() << std::endl;
     for (PoseKeypoints pKp : poseKeypoints)
     {
         // for (int i = 0; i < 38; i += 2)
