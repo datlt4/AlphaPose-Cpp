@@ -241,9 +241,7 @@ public:
 
     ~AlphaPoseTRT()
     {
-        LOG(INFO) << "~AlphaPoseTRT()";
         cudaStreamDestroy(stream);
-        LOG(INFO) << "~AlphaPoseTRT()";
     }
 
     /*virtual*/ bool parseOnnxModel(const std::string &model_path, const int minBatchSize, const int optBatchSize, const int maxBatchSize, const int workspace);
