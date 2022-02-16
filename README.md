@@ -10,7 +10,7 @@
 
 __[NOTE]:__ my code only support 17-keypoint model currently. If you want process more keypoint, you need to modify code in `AlphaPose::postprocess` method.
 
-- Code convert to `Onnx`.
+- Code convert to `Onnx`. [Reference](https://github.com/myl980/AlphaPose2Trt/blob/main/fastpose2onnxDynamic.py)
 
 ```bash
 python convert_onnx.py --cfg "model-zoo/fast_pose_res50/256x192_res50_lr1e-3_1x.yaml" --pth "model-zoo/fast_pose_res50/fast_res50_256x192.pth" --out model-zoo/fast_pose_res50/fast_res50_256x192_dynamic.onnx --dynamic
