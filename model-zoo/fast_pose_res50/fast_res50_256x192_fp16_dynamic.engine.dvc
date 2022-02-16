@@ -1,0 +1,5 @@
+outs:
+- md5: 0be441dac04496844eb38e511a837389
+  size: 94309422
+  path: fast_res50_256x192_fp16_dynamic.engine
+  isexec: true

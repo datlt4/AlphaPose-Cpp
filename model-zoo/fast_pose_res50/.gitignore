@@ -2,3 +2,5 @@
 /fast_res50_256x192.jit
 /fast_res50_256x192.onnx
 /fast_res50_256x192.pth
+/fast_res50_256x192_dynamic.onnx
+/fast_res50_256x192_fp16_dynamic.engine

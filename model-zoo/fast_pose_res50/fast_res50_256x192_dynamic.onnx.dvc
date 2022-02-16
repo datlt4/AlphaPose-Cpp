@@ -1,0 +1,5 @@
+outs:
+- md5: fa7f702ab3487dbafbf8b4f0ffb7596b
+  size: 162216673
+  path: fast_res50_256x192_dynamic.onnx
+  isexec: true

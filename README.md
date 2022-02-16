@@ -13,8 +13,8 @@ __[NOTE]:__ my code only support 17-keypoint model currently. If you want proces
 - Code convert to Torchscript.
 
 ```bash
-python convert_torchscript.py --cfg "model-zoo/fast_pose_res50/256x192_res50_lr1e-3_1x.yaml" --pth "model-zoo/fast_pose_res50/fast_res50_256x192.pth"
-# python convert_torchscript.py --cfg "model-zoo/fast_pose_res152/256x192_res152_lr1e-3_1x-duc.yaml" --pth "model-zoo/fast_pose_res152/fast_421_res152_256x192.pth"
+python convert_onnx.py --cfg "model-zoo/fast_pose_res50/256x192_res50_lr1e-3_1x.yaml" --pth "model-zoo/fast_pose_res50/fast_res50_256x192.pth" --out model-zoo/fast_pose_res50/fast_res50_256x192_dynamic.pth --dynamic
+# python convert_onnx.py --cfg "model-zoo/fast_pose_res50/256x192_res50_lr1e-3_1x.yaml" --pth "model-zoo/fast_pose_res50/fast_res50_256x192.pth" --out model-zoo/fast_pose_res50/fast_res50_256x192.pth 
 ```
 
 2. Download my converted model by using `dvc`
