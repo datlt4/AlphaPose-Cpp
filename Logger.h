@@ -55,7 +55,7 @@ namespace alphaposeTrtLoger
     {
     public:
         Logger(LogLevel level, bool bPrintTimeStamp) : level(level), bPrintTimeStamp(bPrintTimeStamp) {}
-        // ~Logger() {}
+        ~Logger() { std::cout << "[ EMoi ]" << std::endl; }
         virtual std::ostream &GetStream() = 0;
         virtual void FlushStream() = 0;
         bool ShouldLogFor(LogLevel l)
@@ -309,9 +309,9 @@ extern alphaposeTrtLoger::Logger *allogger;
 https://www.foonathan.net/2017/06/lazy-evaluation/
 https://stackoverflow.com/questions/14665184/lazy-logging-in-c
 */
-#define LAZY_LOG(level, expr)                                  \
-    do                                                         \
-    {                                                          \
+#define LAZY_LOG(level, expr)                                 \
+    do                                                        \
+    {                                                         \
         if (allogger->ShouldLogFor(alphaposeTrtLoger::level)) \
-            LOG(level) << expr;                                \
+            LOG(level) << expr;                               \
     } while (0)
