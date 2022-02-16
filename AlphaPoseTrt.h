@@ -189,7 +189,7 @@ namespace PoseEstimation
         }
     }
 
-    void draw(cv::Mat &drawMat, const bbox_t &bbox)
+    inline void draw(cv::Mat &drawMat, const bbox_t &bbox)
     {
         PoseEstimation::draw(drawMat, bbox.keypoints, bbox.kp_scores);
     }
