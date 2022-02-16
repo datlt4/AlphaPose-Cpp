@@ -55,7 +55,7 @@ namespace alphaposeTrtLoger
     {
     public:
         Logger(LogLevel level, bool bPrintTimeStamp) : level(level), bPrintTimeStamp(bPrintTimeStamp) {}
-        ~Logger() {}
+        // ~Logger() {}
         virtual std::ostream &GetStream() = 0;
         virtual void FlushStream() = 0;
         bool ShouldLogFor(LogLevel l)
