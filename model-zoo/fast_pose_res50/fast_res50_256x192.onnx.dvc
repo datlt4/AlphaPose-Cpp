@@ -1,5 +1,0 @@
-outs:
-- md5: 13ad0f877ef25783814b96f2a1d8c1ae
-  size: 162215924
-  path: fast_res50_256x192.onnx
-  isexec: true

@@ -1,5 +1,0 @@
-outs:
-- md5: f2691f731cf1f447ef216be1c8b07aca
-  size: 290106129
-  path: fast_421_res152_256x192.engine
-  isexec: true
