@@ -35,5 +35,5 @@ mkdir build && cd build
 export LIB_TORCH="/usr/local/libtorch"
 cmake -DCMAKE_PREFIX_PATH=$LIB_TORCH ..
 cmake --build . --config Release
-./torch-app
+./app
 ```
