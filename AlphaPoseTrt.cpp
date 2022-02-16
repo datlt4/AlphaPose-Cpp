@@ -338,7 +338,7 @@ bool AlphaPoseTRT::clearBuffer(bool freeInput, bool freeOutput)
     return true;
 }
 
-inline int64_t PoseEstimation::volume(const nvinfer1::Dims &d)
+int64_t PoseEstimation::volume(const nvinfer1::Dims &d)
 {
     int64_t result = std::accumulate(d.d, d.d + d.nbDims, 1, [](int32_t x, int32_t y)
                                      { return x * y; });
