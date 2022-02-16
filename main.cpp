@@ -32,6 +32,6 @@ int main(int argc, char **argv)
         }
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-        std::cout << "[ LOG ][ Pytorch ] duration: " << duration.count() < "ms" << std::endl;
+        std::cout << "[ LOG ][ Pytorch ] duration: " << duration.count() << "ms" << std::endl;
     }
 }
