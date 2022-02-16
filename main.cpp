@@ -1,21 +1,37 @@
 #include "AlphaPose.h"
 
-int main()
+int main(int argc, char **argv)
 {
-    AlphaPose al("/mnt/2B59B0F32ED5FBD7/Projects/KIKAI/AlphaPose/AlphaPose_TorchScript/model-zoo/fast_pose_res50/fast_res50_256x192.jit");
-    cv::Mat image;
-    std::vector<bbox> objBoxes;
-    std::vector<PoseKeypoints> poseKeypoints;
-    image = cv::imread("/mnt/2B59B0F32ED5FBD7/Projects/KIKAI/AlphaPose/AlphaPose_TorchScript/samples/pose4.jpg");
-    objBoxes.push_back(bbox(65.0, 333.0, 103, 302, 0.99));
-    objBoxes.push_back(bbox(82.0, 10.0, 90, 306, 0.99));
-    objBoxes.push_back(bbox(295.0, 335.0, 139, 301, 0.99));
-    objBoxes.push_back(bbox(323.0, 10.0, 109, 295, 0.97));
-    al.predict(image, objBoxes, poseKeypoints);
-    poseKeypoints[0].to_json("poseKeypoints.json", al.cocoKeypointNames);
-    cv::Mat show;
-    al.draw(image, show, poseKeypoints);
-    cv::imwrite("EMoi.png", show);
-    cv::imshow("EMoi", show);
-    int k = cv::waitKey(0);
+    cv::Mat image = cv::imread("../pose2.jpg");
+    std::vector<bbox_t> result{
+        bbox_t{16, 39, 210 - 16, 344 - 41, 0.88f, 1},
+        bbox_t{266, 81, 465 - 266, 348 - 81, 0.88f, 1},
+        bbox_t{543, 98, 720 - 543, 347 - 98, 0.88f, 1},
+        bbox_t{81, 406, 208 - 81, 678 - 406, 0.88f, 1},
+        bbox_t{264, 412, 481 - 264, 688 - 412, 0.88f, 1},
+        bbox_t{513, 471, 709 - 513, 608 - 471, 0.88f, 1},
+        bbox_t{50, 802, 211 - 50, 1026 - 802, 0.88f, 1},
+        bbox_t{285, 810, 427 - 285, 1028 - 810, 0.88f, 1},
+        bbox_t{535, 813, 694 - 535, 1026 - 813, 0.88f, 1},
+    };
+
+    std::cout << "[ ALPHAPOSE ][ TORCHSCRIPT ]" << std::endl;
+    std::unique_ptr<AlphaPose> pose_est = std::make_unique<AlphaPose>("../model-zoo/fast_pose_res50/fast_res50_256x192.jit", std::vector<int>{1});
+
+    for (int i = 0; i < 100; ++i)
+    {
+        auto start = std::chrono::high_resolution_clock::now();
+        result = pose_est->predict(image, result);
+        if (i == 0)
+        {
+            for (bbox_t &bb : result)
+            {
+                PoseEstimation::draw(image, bb);
+            }
+            cv::imwrite("result_torch.jpg", image);
+        }
+        auto stop = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+        std::cout << "[ LOG ][ Pytorch ] duration: " << duration.count() < "ms" << std::endl;
+    }
 }

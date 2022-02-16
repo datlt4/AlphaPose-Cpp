@@ -1,14 +1,15 @@
 #include "AlphaPose.h"
 
-AlphaPose::AlphaPose(std::string model_path)
+AlphaPose::AlphaPose(std::string model_path, std::vector<int> person_index_class) : person_index_class{person_index_class}
 {
     try
     {
-        // al = torch::jit::load("/mnt/2B59B0F32ED5FBD7/Projects/KIKAI/AlphaPose/AlphaPose_TorchScript/model-zoo/fast_pose_res50/fast_res50_256x192.jit", torch::kCUDA);
-        this->al = torch::jit::load(model_path);
+        this->al = torch::jit::load(model_path, torch::kCUDA);
     }
     catch (const c10::Error &e)
     {
+        std::cerr << e.what() << std::endl;
+        std::cerr << e.msg() << std::endl;
         std::cerr << "[Error] loading the model\n";
         assert(false);
     }
@@ -51,10 +52,10 @@ void AlphaPose::preprocess(cv::Mat &img, bbox &box, torch::Tensor &imageTensor, 
     cv::Point_<float> dst[3] = {cv::Point_<float>(dst_w * 0.5, dst_h * 0.5), cv::Point_<float>(dst_w * 0.5, dst_h * 0.5) + dst_dir, cv::Point_<float>(dst_w * 0.5, dst_h * 0.5) + dst_dir + cv::Point_<float>(-direct_dst.y, direct_dst.x)};
     cv::Mat trans = cv::getAffineTransform(src, dst);
     cv::warpAffine(rgbMat, transformed, trans, cv::Size(192, 256), cv::INTER_LINEAR);
+    // cv::imwrite("transformed_00.jpg", transformed);
     float xmin = center.x - scale.x * 0.5;
     float ymin = center.y - scale.y * 0.5;
     outBox = bbox(xmin, ymin, scale.x, scale.y, 1.0);
-
     transformed.convertTo(transformed_255, CV_32F, 1.0 / 255);
     cv::Mat channels[3];
     cv::split(transformed_255, channels);
@@ -80,7 +81,6 @@ void AlphaPose::heatmap_to_coord(const torch::Tensor &hms, const bbox &box, Pose
     int *idx_ptr = (int *)idx.data_ptr();
     float *maxval_ptr = (float *)maxvals.data_ptr();
     for (int idx = 0; idx < maxvals.sizes()[0]; idx++)
-    // for (int idx = 0; idx < maxvals.numel(); idx++)
     {
         cv::Point_<float> p((float)((*idx_ptr) % 48), (float)((*idx_ptr) / 48));
         coords.push_back(p);
@@ -122,8 +122,6 @@ void AlphaPose::heatmap_to_coord(const torch::Tensor &hms, const bbox &box, Pose
         cv::Mat trans = cv::getAffineTransform(dst, src);
         cv::Point_<float> target_coords(trans.at<double>(0, 0) * coords[i].x + trans.at<double>(0, 1) * coords[i].y + trans.at<double>(0, 2),
                                         trans.at<double>(1, 0) * coords[i].x + trans.at<double>(1, 1) * coords[i].y + trans.at<double>(1, 2));
-        // std::ostringstream os;
-        // os << "LINE_140_" << i;
         preds.keypoints.push_back(target_coords);
     }
 }
@@ -141,7 +139,46 @@ void AlphaPose::postprocess(const torch::Tensor &hm_data, const std::vector<bbox
     }
 }
 
-void AlphaPose::predict(cv::Mat image, std::vector<bbox> objBoxes, std::vector<PoseKeypoints> &poseKeypoints)
+// std::vector<bbox_t> AlphaPose::predict(VizgardFrame& imageVizgard, std::vector<bbox_t>& bboxes)
+std::vector<bbox_t> AlphaPose::predict(cv::Mat &image, std::vector<bbox_t> &bboxes)
+{
+    // cv::Mat image = imageVizgard.get_raw_frame_host();
+    std::vector<int> indices;
+    std::vector<bbox> person_bboxes;
+    std::vector<bbox_t> output;
+    for (int idx = 0; idx < bboxes.size(); ++idx)
+    {
+        bool is_person = false;
+        for (int i : this->person_index_class)
+        {
+            if (bboxes.at(idx).obj_id == i)
+            {
+                is_person = true;
+                break;
+            }
+        }
+        if (is_person)
+        {
+            indices.push_back(idx);
+            person_bboxes.push_back(bbox(bboxes.at(idx).x, bboxes.at(idx).y, bboxes.at(idx).w, bboxes.at(idx).h, bboxes.at(idx).prob));
+        }
+        else
+        {
+            output.push_back(bboxes.at(idx));
+        }
+    }
+    std::vector<PoseKeypoints> poseKeypoints;
+    this->predict(image, person_bboxes, poseKeypoints);
+    for (int i = 0; i < indices.size(); ++i)
+    {
+        bboxes.at(indices.at(i)).keypoints = poseKeypoints.at(i).keypoints;
+        bboxes.at(indices.at(i)).kp_scores = poseKeypoints.at(i).kp_scores;
+        output.push_back(bboxes.at(indices.at(i)));
+    }
+    return output;
+}
+
+void AlphaPose::predict(cv::Mat &image, std::vector<bbox> &objBoxes, std::vector<PoseKeypoints> &poseKeypoints)
 {
     cv::Mat processedImage;
     std::vector<bbox> cropped_boxes;
@@ -155,31 +192,11 @@ void AlphaPose::predict(cv::Mat image, std::vector<bbox> objBoxes, std::vector<P
         imageBatch.push_back(imageTensor);
     }
 
-    torch::Tensor iimageBatch = torch::cat(imageBatch, 0);
-    // std::cout << iimageBatch << std::endl;
     if (objBoxes.size() > 0)
     {
+        torch::Tensor iimageBatch = torch::cat(imageBatch, 0);
+        this->al.forward({iimageBatch});
         torch::Tensor hm = this->al.forward({iimageBatch}).toTensor().to(torch::kCPU);
         postprocess(hm, cropped_boxes, poseKeypoints);
-    }
-}
-
-void AlphaPose::draw(const cv::Mat &matInput, cv::Mat &matOutput, const std::vector<PoseKeypoints> &poseKeypoints)
-{
-    matInput.copyTo(matOutput);
-    for (PoseKeypoints pKp : poseKeypoints)
-    {
-        // for (int i = 0; i < 38; i += 2)
-        // {
-        //     cv::line(matOutput,
-        //              cv::Point2i((int)pKp.keypoints[*(this->skeleton + i)].x, (int)pKp.keypoints[*(this->skeleton + i)].y),
-        //              cv::Point2i((int)pKp.keypoints[*(this->skeleton + i + 1)].x, (int)pKp.keypoints[*(this->skeleton + i + 1)].y),
-        //              cv::Scalar(0, 255, 0), 1);
-        // }
-
-        for (int i = 0; i < pKp.keypoints.size(); i++)
-        {
-            cv::circle(matOutput, cv::Point2i((int)pKp.keypoints[i].x, (int)pKp.keypoints[i].y), 5, cv::Scalar(255, 0, 255), cv::FILLED, 8);
-        }
     }
 }

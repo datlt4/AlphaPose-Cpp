@@ -1,25 +1,33 @@
-# CMakeLists.txt
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
-project(torch-app)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+set(APP "app")
+project(${APP})
 
-find_package(Torch REQUIRED)
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS})
+set(CMAKE_CXX_STANDARD 20)
+set(GCC_CXX_FLAGS "${GCC_CXX_FLAGS}")
+# set(CMAKE_PREFIX_PATH /usr/local/libtorch)
+# set(CMAKE_PREFIX_PATH /usr)
 
 # OpenCV
 find_package(OpenCV REQUIRED)
+set(LIB ${LIB} ${OpenCV_LIBRARIES})
+set(INC ${INC} ${OpenCV_INCLUDE_DIRS})
 
-add_executable(torch-app main.cpp AlphaPose.cpp)
-target_link_libraries(torch-app ${TORCH_LIBRARIES} ${OpenCV_LIBRARIES})
-set_property(TARGET torch-app PROPERTY CXX_STANDARD 14)
+# Pytorch
+find_package(Torch REQUIRED)
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS})
+message(STATUS "CMAKE_CXX_FLAGS:     ${CMAKE_CXX_FLAGS}")
+message(STATUS "TORCH_INCLUDE_DIRS:  ${TORCH_INCLUDE_DIRS}")
+message(STATUS "TORCH_LIBRARIES:     ${TORCH_LIBRARIES}")
+set(LIB ${LIB} ${TORCH_LIBRARIES})
+set(INC ${INC} ${TORCH_INCLUDE_DIRS})
 
-# The following code block is suggested to be used on Windows.
-# According to https://github.com/pytorch/pytorch/issues/25457,
-# the DLLs need to be copied to avoid memory errors.
-if (MSVC)
-    file(GLOB TORCH_DLLS "${TORCH_INSTALL_PREFIX}/lib/*.dll")
-    add_custom_command(TARGET torch-app
-                        POST_BUILD
-                        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                        ${TORCH_DLLS}
-                        $<TARGET_FILE_DIR:torch-app>)
-endif (MSVC)
+# AlphaPose.cpp
+set(SRC ${SRC} AlphaPose.cpp)
+
+# Main.cpp
+set(SRC ${SRC} main.cpp)
+
+# Target
+include_directories(${INC})
+add_executable(${APP} ${SRC})
+target_link_libraries(${APP} ${LIB})
