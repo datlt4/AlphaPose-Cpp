@@ -1,6 +1,6 @@
 # AlphaPose-Cpp
 
-## Convert model to Torchscript
+## Convert model to TensorRT
 
 1. __Convert from pretrain model__
 
