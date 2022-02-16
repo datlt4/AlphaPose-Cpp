@@ -215,48 +215,6 @@ namespace PoseEstimation
     }
 }
 
-/*
-class AlphaPoseTRT
-{
-public:
-    AlphaPoseTRT(std::string model_path, std::vector<int> person_index_class);
-    ~AlphaPoseTRT();
-    // std::vector<bbox_t> predict(VizgardFrame& imageVizgard, std::vector<bbox_t>& bboxes);
-    std::vector<bbox_t> predict(cv::Mat &image, std::vector<bbox_t> &bboxes);
-    void loadEngine();
-    std::vector<bbox_t> EngineInference(cv::Mat &image, std::vector<bbox_t> &bboxes);
-
-private:
-    std::vector<int> person_index_class;
-
-    Logger gLogger{Severity::kINFO};
-    nvinfer1::ICudaEngine *engine = nullptr;
-    nvinfer1::IExecutionContext *context = nullptr;
-
-    std::string engine_file;
-
-    void *buffers[2];
-    cudaStream_t stream;
-    int outSize;
-    std::vector<int64_t> bufferSize;
-
-    int BATCH_SIZE = -1;
-    int IMAGE_CHANNEL = 3;
-    int IMAGE_WIDTH = 192;
-    int IMAGE_HEIGHT = 256;
-    int HEATMAP_CHANNEL = 17;
-    int HEATMAP_WIDTH = 48;
-    int HEATMAP_HEIGHT = 64;
-
-    std::vector<float> prepareImage(cv::Mat &img, PoseEstimation::bbox &box, PoseEstimation::bbox &outBox);
-    void predict(cv::Mat &image, std::vector<PoseEstimation::bbox> &objBoxes, std::vector<PoseEstimation::PoseKeypoints> &poseKeypoints);
-    // void preprocess(cv::Mat &img, bbox &box, torch::Tensor &imageTensor, bbox &outBox);
-    // void heatmap_to_coord(const torch::Tensor &hms, const bbox &box, PoseKeypoints &preds);
-    // void postprocess(const torch::Tensor &hm_data, const std::vector<bbox> &cropped_boxes, std::vector<PoseKeypoints> &poseKeypoints);
-    void postprocess(float *output, const std::vector<PoseEstimation::bbox> &cropped_boxes, std::vector<PoseEstimation::PoseKeypoints> &poseKeypoints);
-};
-*/
-
 class AlphaPoseTRT
 {
 protected:
@@ -274,10 +232,6 @@ protected:
     std::vector<void *> output_buffers;
 
     cudaStream_t stream;
-
-    // bool loadEngine(const std::string &fileName, TRTUniquePtr<nvinfer1::ICudaEngine> &engine, TRTUniquePtr<nvinfer1::IExecutionContext> &context);
-    // bool parseOnnxModel(const std::string &model_path, TRTUniquePtr<nvinfer1::ICudaEngine> &engine, TRTUniquePtr<nvinfer1::IExecutionContext> &context);
-    // bool saveEngine(TRTUniquePtr<nvinfer1::ICudaEngine> &engine, const std::string &fileName);
 
 public:
     AlphaPoseTRT(std::vector<int> person_index_class) : person_index_class{person_index_class}
@@ -298,15 +252,7 @@ public:
     bool processInput(float *hostDataBuffer, const int batchSize, cudaStream_t &stream);
     bool processOutput(std::vector<void *> gpu_output, cv::Mat cv_mat);
 
-    // void cv_mat_inference(cv::Mat &image, std::vector<bbox> &objBoxes, std::vector<PoseKeypoints> &poseKeypoints);
     std::vector<bbox_t> EngineInference(cv::Mat &image, std::vector<bbox_t> &bboxes);
-
-    // bool buffers_inference(std::vector<void *> input_buffers);
-    // bool buffers_inference(std::vector<void *> input_buffers, std::vector<void *> &output_buffers);
-
-    // bool custom_buffer_inference(std::vector<void *> search_input_buffers, std::vector<void *> kernel_input_buffers);
-    // bool rpn_inference(std::vector<void *> search_input_buffers, std::vector<void *> kernel_input_buffers);
-    // bool getOutputAsArray(std::vector<float> &cls_track, std::vector<float> &loc_track, cudaStream_t &stream);
 
     void postprocess(float *output, const std::vector<PoseEstimation::bbox> &cropped_boxes, std::vector<PoseEstimation::PoseKeypoints> &poseKeypoints);
     bool clearBuffer(bool freeInput = true, bool freeOutput = true);

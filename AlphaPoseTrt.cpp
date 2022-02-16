@@ -186,8 +186,10 @@ bool AlphaPoseTRT::processInput(float *hostDataBuffer, const int batchSize, cuda
 
 std::vector<bbox_t> AlphaPoseTRT::EngineInference(cv::Mat &image, std::vector<bbox_t> &bboxes)
 {
-    int batchSize = bboxes.size();
-    if (!(batchSize > 0))
+    int nBBoxes = bboxes.size();
+    int maxBatchSize = this->prediction_engine->getMaxBatchSize();
+    int nBatches = nBBoxes / maxBatchSize + ((nBBoxes % maxBatchSize != 0) ? 1 : 0);
+    if (!(nBBoxes > 0))
         return std::vector<bbox_t>{};
 
     // cv::Mat image = imageVizgard.get_raw_frame_host();
@@ -216,37 +218,41 @@ std::vector<bbox_t> AlphaPoseTRT::EngineInference(cv::Mat &image, std::vector<bb
             output.push_back(bboxes.at(idx));
         }
     }
-    std::vector<PoseKeypoints> poseKeypoints;
 
-    std::vector<bbox> cropped_boxes;
-    // std::vector<float> curInput(long(IMAGE_WIDTH * IMAGE_HEIGHT * IMAGE_CHANNEL * batchSize));
-    std::vector<float> curInput{};
-    for (bbox &objBox : person_bboxes)
+    for (int i = 0; i < nBatches; ++i)
     {
-        bbox processedBox;
-        std::vector<float> imageData = this->prepareImage(image, objBox, processedBox);
-        curInput.insert(curInput.end(), imageData.begin(), imageData.end());
-        cropped_boxes.push_back(processedBox);
+        int batchSize = (i == (nBatches - 1)) ? (nBBoxes - maxBatchSize * i) : maxBatchSize;
+        std::vector<PoseKeypoints> poseKeypoints;
+        std::vector<bbox> cropped_boxes;
+        // std::vector<float> curInput(long(IMAGE_WIDTH * IMAGE_HEIGHT * IMAGE_CHANNEL * batchSize));
+        std::vector<float> curInput{};
+        std::vector<PoseEstimation::bbox>::iterator it;
+
+        // for (bbox &objBox : person_bboxes)
+        for (it = person_bboxes.begin() + maxBatchSize * i; it != person_bboxes.begin() + maxBatchSize * i + batchSize; ++it)
+        {
+            bbox processedBox;
+            std::vector<float> imageData = this->prepareImage(image, *it, processedBox);
+            curInput.insert(curInput.end(), imageData.begin(), imageData.end());
+            cropped_boxes.push_back(processedBox);
+        }
+        this->processInput(curInput.data(), batchSize, stream);
+        std::vector<void *> predicitonBindings = {(float *)input_buffers[0], (float *)output_buffers[0]};
+        // LOG(INFO) << "Input " << log_cuda_bf(prediction_input_dims[0], predicitonBindings[0], 100);
+        this->prediction_context->setBindingDimensions(0, nvinfer1::Dims4(batchSize, IMAGE_CHANNEL, IMAGE_HEIGHT, IMAGE_WIDTH));
+        this->prediction_context->enqueue(batchSize, predicitonBindings.data(), 0, nullptr);
+        // LOG(INFO) << "Output: " << log_cuda_bf(prediction_output_dims[0], predicitonBindings[1], 100);
+        std::vector<float> hmOutput(batchSize * HEATMAP_CHANNEL * HEATMAP_HEIGHT * HEATMAP_WIDTH);
+        cudaMemcpy(hmOutput.data(), predicitonBindings[1], hmOutput.size() * sizeof(float), cudaMemcpyDeviceToHost);
+        postprocess(hmOutput.data(), cropped_boxes, poseKeypoints);
+        for (int idx = maxBatchSize * i, c = 0; idx < maxBatchSize * i + batchSize; ++idx, ++c)
+        {
+            bboxes.at(indices.at(idx)).keypoints = poseKeypoints.at(c).keypoints;
+            bboxes.at(indices.at(idx)).kp_scores = poseKeypoints.at(c).kp_scores;
+            output.push_back(bboxes.at(indices.at(idx)));
+        }
+        clearBuffer();
     }
-    this->processInput(curInput.data(), batchSize, stream);
-
-    std::vector<void *> predicitonBindings = {(float *)input_buffers[0], (float *)output_buffers[0]};
-    // LOG(INFO) << "Input " << log_cuda_bf(prediction_input_dims[0], predicitonBindings[0], 100);
-
-    this->prediction_context->setBindingDimensions(0, nvinfer1::Dims4(batchSize, IMAGE_CHANNEL, IMAGE_HEIGHT, IMAGE_WIDTH));
-    this->prediction_context->enqueue(batchSize, predicitonBindings.data(), 0, nullptr);
-    // LOG(INFO) << "Output: " << log_cuda_bf(prediction_output_dims[0], predicitonBindings[1], 100);
-    std::vector<float> hmOutput(batchSize * HEATMAP_CHANNEL * HEATMAP_HEIGHT * HEATMAP_WIDTH);
-    cudaMemcpy(hmOutput.data(), predicitonBindings[1], hmOutput.size() * sizeof(float), cudaMemcpyDeviceToHost);
-    postprocess(hmOutput.data(), cropped_boxes, poseKeypoints);
-
-    for (int i = 0; i < indices.size(); ++i)
-    {
-        bboxes.at(indices.at(i)).keypoints = poseKeypoints.at(i).keypoints;
-        bboxes.at(indices.at(i)).kp_scores = poseKeypoints.at(i).kp_scores;
-        output.push_back(bboxes.at(indices.at(i)));
-    }
-    clearBuffer();
     return output;
 };
 
