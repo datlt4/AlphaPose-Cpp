@@ -241,6 +241,7 @@ public:
 
     ~AlphaPoseTRT()
     {
+        LOG(INFO) << "~AlphaPoseTRT()";
         cudaStreamDestroy(stream);
     }
 
