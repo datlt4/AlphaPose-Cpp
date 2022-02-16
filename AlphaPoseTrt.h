@@ -168,7 +168,7 @@ namespace PoseEstimation
         float score;
     };
 
-    void draw(cv::Mat &drawMat, const std::vector<cv::Point2f> &keypoints, const std::vector<float> &kp_scores)
+    inline void draw(cv::Mat &drawMat, const std::vector<cv::Point2f> &keypoints, const std::vector<float> &kp_scores)
     {
         const float *max_pos = std::max_element(kp_scores.data(), kp_scores.data() + kp_scores.size());
         float max_score = kp_scores[max_pos - kp_scores.data()];
@@ -194,9 +194,9 @@ namespace PoseEstimation
         PoseEstimation::draw(drawMat, bbox.keypoints, bbox.kp_scores);
     }
 
-    int64_t volume(const nvinfer1::Dims &d);
+    inline int64_t volume(const nvinfer1::Dims &d);
 
-    std::string log_cuda_bf(nvinfer1::Dims const &dim_shape, void *cuda_buffer, int number_p)
+    inline std::string log_cuda_bf(nvinfer1::Dims const &dim_shape, void *cuda_buffer, int number_p)
     {
         std::ostringstream oss;
         if (!cuda_buffer)
