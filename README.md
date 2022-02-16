@@ -10,11 +10,11 @@
 
 __[NOTE]:__ my code only support 17-keypoint model currently. If you want process more keypoint, you need to modify code in `AlphaPose::postprocess` method.
 
-- Code convert to Torchscript.
+- Code convert to `Onnx`.
 
 ```bash
-python convert_onnx.py --cfg "model-zoo/fast_pose_res50/256x192_res50_lr1e-3_1x.yaml" --pth "model-zoo/fast_pose_res50/fast_res50_256x192.pth" --out model-zoo/fast_pose_res50/fast_res50_256x192_dynamic.pth --dynamic
-# python convert_onnx.py --cfg "model-zoo/fast_pose_res50/256x192_res50_lr1e-3_1x.yaml" --pth "model-zoo/fast_pose_res50/fast_res50_256x192.pth" --out model-zoo/fast_pose_res50/fast_res50_256x192.pth 
+python convert_onnx.py --cfg "model-zoo/fast_pose_res50/256x192_res50_lr1e-3_1x.yaml" --pth "model-zoo/fast_pose_res50/fast_res50_256x192.pth" --out model-zoo/fast_pose_res50/fast_res50_256x192_dynamic.onnx --dynamic
+# python convert_onnx.py --cfg "model-zoo/fast_pose_res50/256x192_res50_lr1e-3_1x.yaml" --pth "model-zoo/fast_pose_res50/fast_res50_256x192.pth" --out model-zoo/fast_pose_res50/fast_res50_256x192.onnx
 ```
 
 2. Download my converted model by using `dvc`
@@ -28,12 +28,22 @@ dvc pull
 
 ## Build
 
-- Before build `torch-app`, please make sure you built `torch` from [source](https://github.com/pytorch/pytorch#from-source ) or Download [libtorch](https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip) for build `torch` application in C++.
+### Build `trtexec` application
 
 ```bash
-mkdir build && cd build
-export LIB_TORCH="/usr/local/libtorch"
-cmake -DCMAKE_PREFIX_PATH=$LIB_TORCH ..
+mkdir -p build && cd build
+cmake -DBUILD_TRTEXEC=ON ..
 cmake --build . --config Release
-./torch-app
+./alTrtexec --onnx ../model-zoo/fast_pose_res50/fast_res50_256x192_dynamic.onnx \
+    --engine ../model-zoo/fast_pose_res50/fast_res50_256x192_fp16_dynamic.engine \
+    --minBatchSize 1 --optBatchSize 8 --maxBatchSize 32 --dynamic
+```
+
+### Build test application
+
+```bash
+mkdir -p build && cd build
+cmake -DBUILD_TRTEXEC=OFF ..
+cmake --build . --config Release
+./alApp
 ```
