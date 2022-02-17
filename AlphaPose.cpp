@@ -91,7 +91,7 @@ void AlphaPose::heatmap_to_coord(const torch::Tensor &hms, const bbox &box, Pose
     for (int p = 0; p < coords.size(); p++)
     {
         torch::Tensor hm = hms.slice(1, p, p + 1);
-        if ((1 < coords[p].x < 47) && (1 < coords[p].y < 63))
+        if ((1 < coords[p].x < 47) || (1 < coords[p].y < 63))
         {
             cv::Point_<float> diff(*((float *)hm.data_ptr() + (int)coords[p].x + 1 + 48 * (int)coords[p].y) - *((float *)hm.data_ptr() + (int)coords[p].x - 1 + 48 * (int)coords[p].y),
                                    *((float *)hm.data_ptr() + (int)coords[p].x + 48 * ((int)coords[p].y + 1)) - *((float *)hm.data_ptr() + (int)coords[p].x + 48 * ((int)coords[p].y - 1)));
