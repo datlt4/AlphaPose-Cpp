@@ -55,7 +55,7 @@ namespace alphaposeTrtLoger
     {
     public:
         Logger(LogLevel level, bool bPrintTimeStamp) : level(level), bPrintTimeStamp(bPrintTimeStamp) {}
-        ~Logger() { std::cout << "[ EMoi ]" << std::endl; }
+        virtual ~Logger() { std::cout << "[ EMoi ]" << std::endl; }
         virtual std::ostream &GetStream() = 0;
         virtual void FlushStream() = 0;
         bool ShouldLogFor(LogLevel l)
@@ -130,7 +130,7 @@ namespace alphaposeTrtLoger
                 pFileOut = new std::ofstream();
                 pFileOut->open(strFilePath.c_str());
             }
-            ~FileLogger()
+            virtual ~FileLogger()
             {
                 pFileOut->close();
             }
@@ -152,6 +152,7 @@ namespace alphaposeTrtLoger
         public:
             ConsoleLogger(LogLevel level, bool bPrintTimeStamp)
                 : Logger(level, bPrintTimeStamp) {}
+            virtual ~ConsoleLogger() {}
             std::ostream &GetStream() override
             {
                 return std::cout;
@@ -229,6 +230,7 @@ namespace alphaposeTrtLoger
         public:
             UdpLogger(char *szHost, unsigned uPort, LogLevel level, bool bPrintTimeStamp)
                 : Logger(level, bPrintTimeStamp), udpOut(szHost, (unsigned short)uPort) {}
+            virtual ~UdpLogger() {}
             UdpOstream &GetStream() override
             {
                 return udpOut;
