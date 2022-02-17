@@ -169,7 +169,7 @@ bool ParseCommandLine(int argc, char *argv[], TrtexecConfig &config)
 #else  // BUILD_TRTEXEC
 int main(int argc, char **argv)
 {
-    cv::Mat image = cv::imread("../pose2.jpg");
+    cv::Mat image = cv::imread("pose2.jpg");
     std::vector<bbox_t> result{
         bbox_t{16, 39, 210 - 16, 344 - 41, 0.88f, 1},
         bbox_t{266, 81, 465 - 266, 348 - 81, 0.88f, 1},
@@ -184,7 +184,7 @@ int main(int argc, char **argv)
 
     std::cout << "[ ALPHAPOSE ][ TENSORRT ]" << std::endl;
     std::unique_ptr<AlphaPoseTRT> pose_est = std::make_unique<AlphaPoseTRT>(std::vector<int>{1});
-    pose_est->loadEngine("../model-zoo/fast_pose_res50/fast_res50_256x192_fp16_dynamic.engine");
+    pose_est->loadEngine("model-zoo\\fast_pose_res50\\fast_res50_256x192_fp16_dynamic_wins.engine");
 
     for (int i = 0; i < 100; ++i)
     {
