@@ -37,3 +37,7 @@ cmake -DCMAKE_PREFIX_PATH=$LIB_TORCH ..
 cmake --build . --config Release
 ./app
 ```
+
+## TensorRT
+
+- Now, you can access AlphaPose TensorRT version on `tensorrt` and `trt_windows` branch.
