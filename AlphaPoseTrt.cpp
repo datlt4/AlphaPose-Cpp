@@ -274,7 +274,7 @@ void AlphaPoseTRT::postprocess(float *output, const std::vector<bbox> &cropped_b
             int _x = index % 48;
             int _y = index / 48;
             cv::Point_<float> p(static_cast<float>(_x), static_cast<float>(_y));
-            if ((1 < _x < 47) && (1 < _y < 63))
+            if ((1 < _x < 47) || (1 < _y < 63))
             {
                 cv::Point_<float> diff(row[_x + 1 + HEATMAP_WIDTH * _y] - row[_x - 1 + HEATMAP_WIDTH * _y], row[_x + HEATMAP_WIDTH * (_y + 1)] - row[_x + HEATMAP_WIDTH * (_y - 1)]);
                 p += cv::Point_<float>((diff.x == 0) ? 0.0 : ((diff.x < 0) ? -0.25 : 0.25), (diff.y == 0) ? 0.0 : ((diff.y < 0) ? -0.25 : 0.25));
