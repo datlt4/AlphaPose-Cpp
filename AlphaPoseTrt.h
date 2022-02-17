@@ -168,7 +168,9 @@ namespace PoseEstimation
     };
 
     inline void draw(cv::Mat &drawMat, const std::vector<cv::Point2f> &keypoints, const std::vector<float> &kp_scores)
-    {
+    {   
+        if (keypoints.size() == 0)
+            return;
         const float *max_pos = std::max_element(kp_scores.data(), kp_scores.data() + kp_scores.size());
         float max_score = kp_scores[max_pos - kp_scores.data()];
         for (int i = 0; i < PoseEstimation::skeleton.size(); i += 2)
@@ -265,6 +267,7 @@ private:
     const int HEATMAP_WIDTH = 48;
     const int HEATMAP_HEIGHT = 64;
     std::vector<int> person_index_class;
+    int maxBatchSize;
 };
 
 #endif // ALPHAPOSE_TRT_H

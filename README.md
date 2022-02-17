@@ -1,6 +1,13 @@
 # AlphaPose-Cpp
 
-## Convert model to TensorRT
+## Environment
+
+- Cuda 11.3
+- Cudnn 8.2.4.15
+- TensorRT 8.2.3.0
+- OpenCV 4.5.2
+
+## Convert model to TensorRT on Windows
 
 1. __Convert from pretrain model__
 
@@ -31,12 +38,8 @@ dvc pull
 ### Build `trtexec` application
 
 ```bash
-mkdir -p build && cd build
-cmake -DBUILD_TRTEXEC=ON ..
-cmake --build . --config Release
-./alTrtexec --onnx ../model-zoo/fast_pose_res50/fast_res50_256x192_dynamic.onnx \
-    --engine ../model-zoo/fast_pose_res50/fast_res50_256x192_fp16_dynamic.engine \
-    --minBatchSize 1 --optBatchSize 8 --maxBatchSize 32 --dynamic
+cd x64\Release
+AlphaPoseTrt.exe --onnx ..\..\model-zoo\fast_pose_res50\fast_res50_256x192_dynamic.onnx --engine ..\..\model-zoo\fast_pose_res50\fast_res50_256x192_fp16_dynamic_wins.engine --minBatchSize 1 --optBatchSize 8 --maxBatchSize 32 --dynamic
 ```
 
 ### Build test application
