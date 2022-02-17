@@ -85,6 +85,7 @@ bool AlphaPoseTRT::loadEngine(const std::string &fileName)
     TRTUniquePtr<nvinfer1::IRuntime> runtime{nvinfer1::createInferRuntime(gLogger.getTRTLogger())};
     this->prediction_engine.reset(runtime->deserializeCudaEngine(engineData.data(), fsize, nullptr));
     this->prediction_context.reset(this->prediction_engine->createExecutionContext());
+    this->maxBatchSize = this->prediction_engine->getMaxBatchSize();
     return this->prediction_engine != nullptr;
 }
 
@@ -184,11 +185,10 @@ bool AlphaPoseTRT::processInput(float *hostDataBuffer, const int batchSize, cuda
     return true;
 }
 
-std::vector<bbox_t> AlphaPoseTRT::EngineInference(cv::Mat &image, std::vector<bbox_t> &bboxes)
+std::vector<bbox_t> AlphaPoseTRT::EngineInference(cv::Mat& image, std::vector<bbox_t>& bboxes)
 {
     int nBBoxes = bboxes.size();
-    int maxBatchSize = this->prediction_engine->getMaxBatchSize();
-    int nBatches = nBBoxes / maxBatchSize + ((nBBoxes % maxBatchSize != 0) ? 1 : 0);
+
     if (!(nBBoxes > 0))
         return std::vector<bbox_t>{};
 
@@ -218,6 +218,8 @@ std::vector<bbox_t> AlphaPoseTRT::EngineInference(cv::Mat &image, std::vector<bb
             output.push_back(bboxes.at(idx));
         }
     }
+    nBBoxes = person_bboxes.size();
+    int nBatches = (nBBoxes == 0) ? 0 : (nBBoxes / maxBatchSize + ((nBBoxes % maxBatchSize != 0) ? 1 : 0));
 
     for (int i = 0; i < nBatches; ++i)
     {
@@ -227,7 +229,6 @@ std::vector<bbox_t> AlphaPoseTRT::EngineInference(cv::Mat &image, std::vector<bb
         // std::vector<float> curInput(long(IMAGE_WIDTH * IMAGE_HEIGHT * IMAGE_CHANNEL * batchSize));
         std::vector<float> curInput{};
         std::vector<PoseEstimation::bbox>::iterator it;
-
         // for (bbox &objBox : person_bboxes)
         for (it = person_bboxes.begin() + maxBatchSize * i; it != person_bboxes.begin() + maxBatchSize * i + batchSize; ++it)
         {
@@ -237,7 +238,7 @@ std::vector<bbox_t> AlphaPoseTRT::EngineInference(cv::Mat &image, std::vector<bb
             cropped_boxes.push_back(processedBox);
         }
         this->processInput(curInput.data(), batchSize, stream);
-        std::vector<void *> predicitonBindings = {(float *)input_buffers[0], (float *)output_buffers[0]};
+        std::vector<void*> predicitonBindings = { (float*)input_buffers[0], (float*)output_buffers[0] };
         // LOG(INFO) << "Input " << log_cuda_bf(prediction_input_dims[0], predicitonBindings[0], 100);
         this->prediction_context->setBindingDimensions(0, nvinfer1::Dims4(batchSize, IMAGE_CHANNEL, IMAGE_HEIGHT, IMAGE_WIDTH));
         this->prediction_context->enqueue(batchSize, predicitonBindings.data(), 0, nullptr);
