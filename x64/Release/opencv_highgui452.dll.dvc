@@ -1,0 +1,4 @@
+outs:
+- md5: 7ecc9dd6f43dcc34937e8aa5ed9c0f62
+  size: 176640
+  path: opencv_highgui452.dll

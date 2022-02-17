@@ -1,0 +1,4 @@
+outs:
+- md5: 99114faf2f35fb4f48cc3b7cb9d70ca5
+  size: 664985088
+  path: cudnn_cnn_infer64_8.dll

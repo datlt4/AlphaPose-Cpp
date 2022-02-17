@@ -14,7 +14,6 @@
 #include <map>
 #include <numeric>
 #include <iomanip>
-#include "dirent.h"
 #include "NvOnnxParser.h"
 #include "NvInfer.h"
 #include "NvInferRuntime.h"

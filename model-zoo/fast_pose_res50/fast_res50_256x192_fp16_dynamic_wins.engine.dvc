@@ -1,0 +1,4 @@
+outs:
+- md5: ef61d37b77139a0369670f53255e8b18
+  size: 117486955
+  path: fast_res50_256x192_fp16_dynamic_wins.engine

@@ -1,0 +1,4 @@
+outs:
+- md5: 88cc582681f85de6ae8becb96fbc3182
+  size: 3413504
+  path: opencv_imgcodecs452.dll

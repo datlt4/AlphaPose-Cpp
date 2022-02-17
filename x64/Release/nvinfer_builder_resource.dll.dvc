@@ -1,0 +1,4 @@
+outs:
+- md5: 7ec48864ac5ceb17b57aba36c1aef578
+  size: 65812680
+  path: nvinfer_builder_resource.dll

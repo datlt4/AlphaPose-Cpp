@@ -1,0 +1,4 @@
+outs:
+- md5: ba6ec4a6be1b73ba60801b69eafa0513
+  size: 546816
+  path: opencv_aruco452.dll

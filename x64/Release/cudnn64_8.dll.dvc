@@ -1,0 +1,4 @@
+outs:
+- md5: 042df263b4ccfc2856dc552d3441f431
+  size: 223744
+  path: cudnn64_8.dll

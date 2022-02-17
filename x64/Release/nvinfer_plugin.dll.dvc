@@ -1,0 +1,4 @@
+outs:
+- md5: f5c6c424babc14b19532fb12787f6dbe
+  size: 31617232
+  path: nvinfer_plugin.dll

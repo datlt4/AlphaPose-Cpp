@@ -2,7 +2,7 @@
 
 alphaposeTrtLoger::Logger *allogger = alphaposeTrtLoger::LoggerFactory::CreateConsoleLogger(alphaposeTrtLoger::INFO);
 #ifdef BUILD_TRTEXEC
-// ./alTrtexec --onnx ../model-zoo/fast_pose_res50/fast_res50_256x192_dynamic.onnx --engine ../model-zoo/fast_pose_res50/fast_res50_256x192_fp16_dynamic.engine --minBatchSize 1 --optBatchSize 8 --maxBatchSize 32 --dynamic
+// AlphaPoseTrt.exe --onnx ..\..\model-zoo\fast_pose_res50\fast_res50_256x192_dynamic.onnx --engine ..\..\model-zoo\fast_pose_res50\fast_res50_256x192_fp16_dynamic_wins.engine --minBatchSize 1 --optBatchSize 8 --maxBatchSize 32 --dynamic
 struct TrtexecConfig
 {
     TrtexecConfig() : minBatchSize{1}, optBatchSize{1}, maxBatchSize{1}, workspace{1ULL << 30}, dynamic{true} {}
@@ -38,11 +38,10 @@ int main(int argc, char **argv)
             pose_est->parseOnnxModel(config.onnx_dir, config.minBatchSize, config.optBatchSize, config.maxBatchSize, config.workspace);
             pose_est->saveEngine(config.engine_dir);
         }
-        LOG(INFO) << "[ PASSED ]:\n"
-                  << config << std::endl;
+        LOG(INFO) << "[ PASSED ]:\n" << config;
     }
     else
-        LOG(ERROR) << "[ ERROR ] STOP!!!" << std::endl;
+        LOG(ERROR) << "[ ERROR ] STOP!!!";
 }
 
 void ShowHelpAndExit(const char *szBadOption = NULL)

@@ -1,0 +1,4 @@
+outs:
+- md5: 5f112077799b50bdb2c843bbd83d6d1a
+  size: 30027776
+  path: opencv_core452.dll
