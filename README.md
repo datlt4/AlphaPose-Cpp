@@ -2,7 +2,15 @@
 
 ## Convert model to TensorRT
 
-1. __Convert from pretrain model__
+1. __Clone Github repository__
+
+```bash
+git clone --recursive https://github.com/LuongTanDat/AlphaPose-Cpp.git -b tensorrt
+cd AlphaPose-Cpp
+export WORKDIR=$(pwd)
+```
+
+2. __Convert from pretrain model__
 
 - Install AlphaPose python as following [repo](https://github.com/MVIG-SJTU/AlphaPose/blob/master/docs/INSTALL.md#code-installation).
 
@@ -17,7 +25,7 @@ python convert_onnx.py --cfg "model-zoo/fast_pose_res50/256x192_res50_lr1e-3_1x.
 # python convert_onnx.py --cfg "model-zoo/fast_pose_res50/256x192_res50_lr1e-3_1x.yaml" --pth "model-zoo/fast_pose_res50/fast_res50_256x192.pth" --out model-zoo/fast_pose_res50/fast_res50_256x192.onnx
 ```
 
-2. Download my converted model by using `dvc`
+3. Download my converted model by using `dvc`
 
 - Install `dvc`
 
@@ -31,19 +39,24 @@ dvc pull
 ### Build `trtexec` application
 
 ```bash
-mkdir -p build && cd build
-cmake -DBUILD_TRTEXEC=ON ..
+cd ${WORKDIR}/TrtExec/build
+cmake ..
 cmake --build . --config Release
-./alTrtexec --onnx ../model-zoo/fast_pose_res50/fast_res50_256x192_dynamic.onnx \
-    --engine ../model-zoo/fast_pose_res50/fast_res50_256x192_fp16_dynamic.engine \
-    --minBatchSize 1 --optBatchSize 8 --maxBatchSize 32 --dynamic
+./Trtexec \
+    --onnx ../../model-zoo/fast_pose_res50/fast_res50_256x192_dynamic.onnx \
+    --engine ../../model-zoo/fast_pose_res50/fast_res50_256x192_fp16_dynamic.engine \
+    --inputName "input" \
+    --minShape 1x3x256x192 \
+    --optShape 8x3x256x192 \
+    --maxShape 32x3x256x192 \
+    --workspace 1024
 ```
 
 ### Build test application
 
 ```bash
-mkdir -p build && cd build
-cmake -DBUILD_TRTEXEC=OFF ..
+cd ${WORKDIR}/build
+cmake ..
 cmake --build . --config Release
 ./alApp
 ```
