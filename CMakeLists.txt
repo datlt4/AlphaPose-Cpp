@@ -32,16 +32,11 @@ set(INC ${INC} ${TENSORRT_INCLUDE_DIR})
 
 # AlphaPose
 set(SRC ${SRC} AlphaPoseTrt.cpp)
-option(BUILD_TRTEXEC "BUILD_TRTEXEC" ON)
 
 # Main.cpp
 set(SRC ${SRC} main.cpp)
-if (BUILD_TRTEXEC)
-    add_definitions(-DBUILD_TRTEXEC)
-    set(APP "alTrtexec")
-else()
-    set(APP "alApp")
-endif()
+set(INC ${INC} TrtExec)
+set(APP "alApp")
 
 # Target
 include_directories(${INC})

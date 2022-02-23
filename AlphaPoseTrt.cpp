@@ -15,13 +15,13 @@ bool AlphaPoseTRT::parseOnnxModel(const std::string &model_path, const int minBa
     // parse ONNX
     if (!parser->parseFromFile(model_path.c_str(), static_cast<int>(nvinfer1::ILogger::Severity::kINFO)))
     {
-        LOG(ERROR) << "ERROR: could not parse the model.";
+        MLOG(ERROR) << "ERROR: could not parse the model.";
         return false;
     }
     TRTUniquePtr<nvinfer1::IBuilderConfig> config{builder->createBuilderConfig()};
     if (!config)
     {
-        LOG(ERROR) << "Create builder config failed.";
+        MLOG(ERROR) << "Create builder config failed.";
         return false;
     }
     config->setFlag(nvinfer1::BuilderFlag::kFP16);
@@ -45,14 +45,14 @@ bool AlphaPoseTRT::saveEngine(const std::string &fileName)
     std::ofstream engineFile(fileName, std::ios::binary);
     if (!engineFile)
     {
-        LOG(ERROR) << "Cannot open engine file: " << fileName;
+        MLOG(ERROR) << "Cannot open engine file: " << fileName;
         return false;
     }
 
     TRTUniquePtr<nvinfer1::IHostMemory> serializedEngine{this->prediction_engine->serialize()};
     if (serializedEngine == nullptr)
     {
-        LOG(ERROR) << "Engine serialization failed";
+        MLOG(ERROR) << "Engine serialization failed";
         return false;
     }
 
@@ -66,7 +66,7 @@ bool AlphaPoseTRT::loadEngine(const std::string &fileName)
     std::ifstream engineFile(fileName, std::ios::binary);
     if (!engineFile)
     {
-        LOG(ERROR) << "Cannot open engine file: " << fileName;
+        MLOG(ERROR) << "Cannot open engine file: " << fileName;
         return false;
     }
     engineFile.seekg(0, std::ifstream::end);
@@ -78,7 +78,7 @@ bool AlphaPoseTRT::loadEngine(const std::string &fileName)
 
     if (!engineFile.good())
     {
-        LOG(ERROR) << "Error loading engine file";
+        MLOG(ERROR) << "Error loading engine file";
         return false;
     }
 
@@ -168,7 +168,7 @@ bool AlphaPoseTRT::processInput(float *hostDataBuffer, const int batchSize, cuda
 
     if (prediction_input_dims.empty() || prediction_output_dims.empty())
     {
-        LOG(ERROR) << "Expect at least one input and one output for network";
+        MLOG(ERROR) << "Expect at least one input and one output for network";
         return false;
     }
 
@@ -178,7 +178,7 @@ bool AlphaPoseTRT::processInput(float *hostDataBuffer, const int batchSize, cuda
     // Host memory for input buffer
     if (cudaMemcpyAsync(gpu_input_0, hostDataBuffer, size_t(batchSize * IMAGE_HEIGHT * IMAGE_WIDTH * IMAGE_CHANNEL * sizeof(float)), cudaMemcpyHostToDevice, stream) != cudaSuccess)
     {
-        LOG(ERROR) << "Input corrupted or CUDA error, abort ";
+        MLOG(ERROR) << "Input corrupted or CUDA error, abort ";
         return false;
     }
 
@@ -239,10 +239,10 @@ std::vector<bbox_t> AlphaPoseTRT::EngineInference(cv::Mat& image, std::vector<bb
         }
         this->processInput(curInput.data(), batchSize, stream);
         std::vector<void*> predicitonBindings = { (float*)input_buffers[0], (float*)output_buffers[0] };
-        // LOG(INFO) << "Input " << log_cuda_bf(prediction_input_dims[0], predicitonBindings[0], 100);
+        // MLOG(INFO) << "Input " << log_cuda_bf(prediction_input_dims[0], predicitonBindings[0], 100);
         this->prediction_context->setBindingDimensions(0, nvinfer1::Dims4(batchSize, IMAGE_CHANNEL, IMAGE_HEIGHT, IMAGE_WIDTH));
         this->prediction_context->enqueue(batchSize, predicitonBindings.data(), 0, nullptr);
-        // LOG(INFO) << "Output: " << log_cuda_bf(prediction_output_dims[0], predicitonBindings[1], 100);
+        // MLOG(INFO) << "Output: " << log_cuda_bf(prediction_output_dims[0], predicitonBindings[1], 100);
         std::vector<float> hmOutput(batchSize * HEATMAP_CHANNEL * HEATMAP_HEIGHT * HEATMAP_WIDTH);
         cudaMemcpy(hmOutput.data(), predicitonBindings[1], hmOutput.size() * sizeof(float), cudaMemcpyDeviceToHost);
         postprocess(hmOutput.data(), cropped_boxes, poseKeypoints);
@@ -315,7 +315,7 @@ void AlphaPoseTRT::postprocess(float *output, const std::vector<bbox> &cropped_b
 
 bool AlphaPoseTRT::clearBuffer(bool freeInput, bool freeOutput)
 {
-    // LOGCUDABUFFER(prediction_output_dims[0], this->output_buffers[0], 100);
+    // MLOGCUDABUFFER(prediction_output_dims[0], this->output_buffers[0], 100);
     this->prediction_input_dims.clear();
     this->prediction_output_dims.clear();
     try
@@ -330,7 +330,7 @@ bool AlphaPoseTRT::clearBuffer(bool freeInput, bool freeOutput)
     }
     catch (std::runtime_error &e)
     {
-        LOG(ERROR) << e.what() << std::endl;
+        MLOG(ERROR) << e.what() << std::endl;
         return false;
     }
     input_buffers.clear();

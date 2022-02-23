@@ -1,0 +1,3 @@
+[submodule "TrtExec"]
+	path = TrtExec
+	url = https://github.com/LuongTanDat/Trtexec-DynamicShape.git

@@ -1,86 +1,12 @@
 #ifndef ALPHAPOSE_TRT_H
 #define ALPHAPOSE_TRT_H
 
-#include <iostream>
-#include <vector>
-#include <opencv2/opencv.hpp>
-#include <cmath>
-#include <assert.h>
-#include <map>
-#include <chrono>
-#include <atomic>
-#include <opencv2/opencv.hpp>
-#include <cuda_runtime_api.h>
-#include <map>
-#include <numeric>
-#include <iomanip>
-#include "NvOnnxParser.h"
-#include "NvInfer.h"
-#include "NvInferRuntime.h"
-#include "fstream"
+#include "Trtexec.h"
 #include "common.h"
-#include "Logger.h"
+
 #define THRESHOLD_RATIO 0.1
 
-extern alphaposeTrtLoger::Logger *allogger;
-
-using Severity = nvinfer1::ILogger::Severity;
-
-struct TRTDestroy
-{
-    template <class T>
-    void operator()(T *obj) const
-    {
-        if (obj)
-        {
-            obj->destroy();
-        }
-    }
-};
-template <class T>
-using TRTUniquePtr = std::unique_ptr<T, TRTDestroy>;
-
-template <typename T>
-TRTUniquePtr<T> makeUnique(T *t)
-{
-    return TRTUniquePtr<T>{t};
-}
-
-struct Parser
-{
-    // TrtUniquePtr<nvcaffeparser1::ICaffeParser> caffeParser;
-    // TrtUniquePtr<nvuffparser::IUffParser> uffParser;
-    TRTUniquePtr<nvonnxparser::IParser> onnxParser;
-    operator bool() const
-    {
-        // return caffeParser || uffParser || onnxParser;
-        return !!(onnxParser);
-    }
-};
-
-class TrtLogger : public nvinfer1::ILogger
-{
-    // trtlogger::Logger *logger;
-public:
-    // TRTLogger(trtlogger::Logger* logger){
-    //     this->logger = logger;
-    // }
-    // https://github.com/NVIDIA/TensorRT/blob/96e23978cd6e4a8fe869696d3d8ec2b47120629b/samples/common/logging.h#L258
-    void log(Severity severity, const char *msg) noexcept override
-    {
-        static alphaposeTrtLoger::LogLevel map[] = {
-            alphaposeTrtLoger::FATAL, alphaposeTrtLoger::ERROR, alphaposeTrtLoger::WARNING, alphaposeTrtLoger::INFO, alphaposeTrtLoger::TRACE};
-        // remove this 'if' if you need more logged info
-        if ((severity == Severity::kERROR) || (severity == Severity::kINTERNAL_ERROR))
-        {
-            alphaposeTrtLoger::LogTransaction(allogger, map[(int)severity], __FILE__, __LINE__, __FUNCTION__).GetStream() << msg;
-        }
-    }
-    nvinfer1::ILogger &getTRTLogger()
-    {
-        return *this;
-    }
-};
+extern TrtLoger::Logger *allogger;
 
 namespace PoseEstimation
 {
