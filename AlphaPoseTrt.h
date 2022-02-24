@@ -6,7 +6,7 @@
 
 #define THRESHOLD_RATIO 0.1
 
-extern TrtLoger::Logger *allogger;
+extern TrtLoger::Logger *mLogger;
 
 namespace PoseEstimation
 {
